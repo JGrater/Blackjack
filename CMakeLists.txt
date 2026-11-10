@@ -10,4 +10,6 @@ add_executable(Blackjack main.cpp
         Blackjack.h
         Player.h
         Player.cpp
-        Renderer.h)
+        Renderer.h
+        Settings.h
+        Hand.h)

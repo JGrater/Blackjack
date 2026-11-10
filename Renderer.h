@@ -31,6 +31,7 @@ inline void printHand(const Hand& hand) {
 
 inline void printResult(const Result result, const double winnings) {
     using namespace Colours;
+    using enum Result;
     switch (result) {
         case win:
             std::cout << "You won! Winnings: " << GREEN << "+" << winnings << RESET << std::endl;
@@ -48,6 +49,7 @@ inline void printResult(const Result result, const double winnings) {
 
 inline void printSplitResult(const std::array<Result, 2> results, const double winnings) {
     using namespace Colours;
+    using enum Result;
     for (int i = 1; i >= 0; --i) {
         std::cout << "For your ";
         std::cout << (i == 1 ? "first hand " : "second hand ");

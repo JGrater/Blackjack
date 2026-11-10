@@ -20,12 +20,15 @@ bool Player::canBet(const double bet) const {
 void Player::splitHand() {
     assert(m_hand.hand.size() == 2 && "Player::splitHand() does not have an hand");
     assert(m_hand.hand[0].value() == m_hand.hand[1].value() && "Player::splitHand() can not split hand");
-    const Card card = m_hand.hand[1];
-    m_hand.hand.pop_back();
-    m_hand.score = card.value();
-    m_splitHand.pickUp(card);
-    m_splitHand.bet = m_hand.bet;
-    m_balance -= m_splitHand.bet;
+    const Card firstHandCard = m_hand.hand[0];
+    const Card secondHandCard = m_hand.hand[1];
+    const double originalBet = m_hand.bet;
+    reset();
+    m_hand.pickUp(firstHandCard);
+    m_splitHand.pickUp(secondHandCard);
+    m_hand.bet = originalBet;
+    m_splitHand.bet = originalBet;
+    m_balance -= originalBet;
 }
 
 void Player::bet(const double bet) {

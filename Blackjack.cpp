@@ -4,8 +4,10 @@
 
 #include "Blackjack.h"
 #include "Deck.h"
+#include "Hand.h"
 #include "Player.h"
 #include "Renderer.h"
+#include "Settings.h"
 
 Play doPlay(const bool canDoubleDown, const bool canSplit) {
     char input{};
@@ -19,7 +21,7 @@ Play doPlay(const bool canDoubleDown, const bool canSplit) {
         } else {
             input = ConsoleInput::charInput("(h) to hit, (s) to stand: ", "hs");
         }
-
+        using enum Play;
         switch (input) {
             case 'h':
                 return hit;
@@ -48,10 +50,6 @@ bool dealerTurn(Deck& deck, Hand& hand) {
     while (hand.score < Settings::dealerHold) {
         Card card {deck.dealCard()};
         hand.pickUp(card);
-
-        if (Settings::dealerHitSoft && hand.score > Settings::bust && hand.aceCount > 0)
-            hand.toSoftAce();
-
         std::cout << "The dealer pulls a " << card << ". They now have: " << hand.score << ".\n";
     }
 
@@ -61,19 +59,14 @@ bool dealerTurn(Deck& deck, Hand& hand) {
 void playerPickUp(Deck& deck, Hand& hand) {
     const Card card {deck.dealCard()};
     hand.pickUp(card);
-
-    if (hand.score > Settings::bust && hand.aceCount > 0)
-        hand.toSoftAce();
-
-    std::cout << "Your were dealt a " << card << ". You now have: " << hand.score;
+    std::cout << "Your were dealt a " << card << ".";
     if (hand.score == Settings::bust) {
-        std::cout << " Blackjack!";
+        std::cout << " Blackjack! ";
     }
-
-    std::cout << std::endl;
 }
 
-bool playerTurn(Deck& deck, Player& dealer, Player& player, bool isSplitHand) {
+bool playerTurn(Deck& deck, Player& dealer, Player& player, const bool isSplitHand) {
+    using enum Play;
     Hand& hand = isSplitHand ? player.getSplitHand() : player.getHand();
     while (hand.score < Settings::bust) {
         const Play play{ doPlay(player.canBet(hand.bet), player.canSplit()) };
@@ -83,10 +76,12 @@ bool playerTurn(Deck& deck, Player& dealer, Player& player, bool isSplitHand) {
         if (play == double_down) {
             isSplitHand ? player.splitHandBet(hand.bet) : player.bet(hand.bet);
             playerPickUp(deck, hand);
+            std::cout << "  You now have: " << hand.score << std::endl;
             break;
         }
         if (play == hit) {
             playerPickUp(deck, hand);
+            std::cout << "  You now have: " << hand.score << std::endl;
         }
         if (play == split) {
             player.splitHand();
@@ -136,7 +131,8 @@ void deal(Hand& dealerHand, Hand& playerHand, Deck& deck) {
     std::cout << std::endl;
 }
 
-void applyResult(Hand& hand, int dealerScore) {
+void applyResult(Hand& hand, const int dealerScore) {
+    using enum Result;
     if (hand.score == dealerScore) {
         hand.result = draw;
     } else if (hand.score > dealerScore) {
@@ -147,10 +143,12 @@ void applyResult(Hand& hand, int dealerScore) {
 }
 
 void playSplit(Deck& deck, Player& dealer, Player& player) {
+    using enum Result;
     Hand& hand = player.getHand();
     Hand& splitHand = player.getSplitHand();
 
-    std::cout << "Your first hand is showing ";
+    playerPickUp(deck, splitHand);
+    std::cout << "\nYour first hand is showing ";
     printHand(splitHand);
     std::cout << std::endl;
     if (playerTurn(deck,dealer,player,true)) {
@@ -158,7 +156,8 @@ void playSplit(Deck& deck, Player& dealer, Player& player) {
         splitHand.result = loss;
     }
 
-    std::cout << "Your second hand is showing ";
+    playerPickUp(deck, hand);
+    std::cout << "\nYour second hand is showing ";
     printHand(hand);
     std::cout << std::endl;
     if (playerTurn(deck,dealer,player,false)) {
@@ -170,8 +169,10 @@ void playSplit(Deck& deck, Player& dealer, Player& player) {
 
     if (dealerTurn(deck, dealer.getHand())) {
         std::cout << "The dealer went bust!\n";
-        hand.result = win;
-        splitHand.result = win;
+        if (hand.result != loss)
+            hand.result = win;
+        if (splitHand.result != loss)
+            splitHand.result = win;
         return;
     }
 
@@ -185,6 +186,7 @@ void playSplit(Deck& deck, Player& dealer, Player& player) {
 
 
 double applyWinnings(Player& dealer, Player& player, const bool isSplitHand) {
+    using enum Result;
     Hand const& hand = isSplitHand ? player.getSplitHand() : player.getHand();
     double winnings{0};
     if (hand.result == win && hand.naturalBlackjack) {
@@ -225,6 +227,7 @@ void blackjackSplit(Deck& deck, Player& dealer, Player& player) {
 }
 
 Result blackjack(Player& dealer, Player& player) {
+    using enum Result;
     Deck deck{};
     placeBet(player);
     deal(dealer.getHand(), player.getHand(), deck);

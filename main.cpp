@@ -20,7 +20,7 @@ void gameLoop() {
     printBalance(player);
 
     do {
-        if (const Result result = blackjack(dealer, player); result != null_result)
+        if (const Result result = blackjack(dealer, player); result != Result::null_result)
             finish(result, dealer, player);
         printBalance(player);
         dealer.reset();

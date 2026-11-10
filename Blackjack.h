@@ -6,16 +6,7 @@
 #define BLACKJACK_H
 #include "Player.h"
 
-namespace Settings {
-    static constexpr int bust{21};
-    static constexpr int dealerHold{17};
-    static constexpr bool dealerHitSoft{true};
-
-    static constexpr double minBet{1};
-    static constexpr double maxBet{500};
-}
-
-enum Play {
+enum class Play {
     hit,
     stand,
     double_down,

@@ -4,40 +4,9 @@
 
 #ifndef PLAYER_H
 #define PLAYER_H
-#include <cassert>
 
 #include "Deck.h"
-
-enum Result {
-    win,
-    loss,
-    draw,
-
-    null_result
-};
-
-struct Hand {
-    std::vector<Card> hand{};
-    int score{0};
-    int aceCount{0};
-    double bet{0};
-    Result result{null_result};
-    bool naturalBlackjack{false};
-
-
-    void pickUp(const Card& card) {
-        hand.push_back(card);
-        score += card.value();
-        if (card.rank == Card::ace)
-            ++aceCount;
-    }
-
-    void toSoftAce() {
-        assert(aceCount > 0 && "Player::toSoftAce() does not have an ace");
-        score -= 10;
-        --aceCount;
-    }
-};
+#include "Hand.h"
 
 class Player {
 public:
@@ -61,7 +30,7 @@ public:
     void reset();
 
 private:
-    std::string_view m_name{};
+    std::string m_name{};
     Hand m_hand{};
     Hand m_splitHand{};
     double m_balance{0};
